@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>The Complete Beginner's JavaScript Course - Crossing Game</title>
+    <meta charset="utf-8"/>
+    <style>
+        #canvas {
+          border: 2px solid black;
+          background-color: red;
+        }
+    </style>
+  </head>
+  <body>
+    <h1>Crossing Game</h1>
+    <!-- DO NOT MODIFY WIDTH AND HEIGHT USING CSS -->
+    <canvas id="canvas" width="1000" height="500"></canvas>
+    <script>
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext('2d');
+      let screenWidth = 1000;
+      let screenHeight = 500;
+      var isGameLive = true;
+
+      class gameCharacter {
+        constructor(x, y, width, height, color, speed) {
+          this.x = x;
+          this.y = y;
+          this.width = width;
+          this.height = height;
+          this.color = color;
+          this.speed = speed;
+          this.maxSpeed = 4;
+        }
+
+        moveHorizontally () {
+          this.x += this.speed;
+        }
+
+        moveVertically () {
+          if (this.y > screenHeight - 100 || this.y < 50) {
+            this.speed *= -1;
+          }
+          this.y += this.speed;
+        }
+      }
+
+      var enemies = [
+        new gameCharacter(250,50,50,50,"rgb(0,0,255)", 2),
+        new gameCharacter(500,350,50,50,"rgb(0,0,255)", 3),
+        new gameCharacter(750,50,50,50,"rgb(0,0,255)", 4),
+      ];
+
+      var player = new gameCharacter(50, 225, 50, 50, "rgb(0, 255, 0)", 0);
+
+      var treasure = new gameCharacter(900, 225, 50, 50, "rgb(255, 255, 0)", 0)
+
+      var sprites = {};
+
+      var loadSprites = function() {
+        sprites.player = new Image();
+        sprites.player.src = 'images/hero.png'
+
+        sprites.background = new Image();
+        sprites.background.src = 'images/floor.png'
+
+        sprites.treasure = new Image();
+        sprites.treasure.src = 'images/chest.png'
+
+        sprites.enemy = new Image();
+        sprites.enemy.src = 'images/enemy.png'
+      }
+
+      document.onkeydown = function(event) {
+        let keyPressed = event.keyCode;
+
+        if (keyPressed == 39) { // right
+          player.speed = player.maxSpeed;
+        } else if (keyPressed == 37) { // left
+          player.speed = -player.maxSpeed;
+        }
+      };
+
+      document.onkeyup = function(event) {
+        let keyReleased = event.keyCode;
+
+        if (keyReleased == 39 || keyReleased == 37) {
+          player.speed = 0;
+        }
+      };
+
+      var checkCollisions = function(rect1, rect2) {
+        var xOverlap = Math.abs(rect1.x - rect2.x)
+        <= Math.max(rect1.width, rect2.width);
+
+        var yOverlap = Math.abs(rect1.y - rect2.y)
+        <= Math.max(rect1.height, rect2.height);
+
+        return xOverlap && yOverlap;
+      }
+
+      var draw = function () {
+        ctx.clearRect (0,0,screenWidth,screenHeight);
+        ctx.drawImage(sprites.background, 0, 0);
+
+        ctx.drawImage(sprites.treasure, treasure.x, treasure.y);
+
+        ctx.drawImage(sprites.player, player.x, player.y);
+
+        enemies.forEach(function(element) {
+          ctx.drawImage(sprites.enemy, element.x, element.y);
+        });
+      }
+
+      var update = function () {
+        enemies.forEach(function (element) {
+          element.moveVertically();
+          if (checkCollisions(player, element)) {
+            endGameLogic("Game Over!");
+          }
+        });
+
+        player.moveHorizontally();
+        if (checkCollisions(treasure, player)) {
+          endGameLogic("You Win!");
+        }
+      }
+
+      var endGameLogic = function(text) {
+        isGameLive = false;
+        alert(text);
+        window.location = "";
+      }
+
+      var step = function () {
+        // code here ..
+        update();
+        draw();
+
+        // This should be called last!
+        if (isGameLive) {
+          window.requestAnimationFrame(step); // This is calling the next step
+        }
+      }
+
+      loadSprites();
+      step();
+    </script>
+  </body>
+</html?
